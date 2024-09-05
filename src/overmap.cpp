@@ -3353,13 +3353,10 @@ bool overmap::is_marked_dangerous( const tripoint_om_omt &p ) const
         } else if( p.xy() == i.p ) {
             return true;
         }
-        const int radius = i.danger_radius;
-        if( i.danger_radius == 0 && i.p != p.xy() ) {
-            continue;
-        }
 
-        int dist = rl_dist( i.p, p.xy() );
-        if( dist <= radius ) {
+        inclusive_rectangle<point_om_omt> rect(i.start, i.end);
+
+        if (rect.contains(p.xy())) {
             return true;
         }
     }
@@ -3392,6 +3389,19 @@ const std::string &overmap::note( const tripoint_om_omt &p ) const
     return ( it != std::end( notes ) ) ? it->text : fallback;
 }
 
+std::optional<om_note> overmap::note_at(const tripoint_om_omt& p)
+{
+    const auto& notes = layer[p.z() + OVERMAP_DEPTH].notes;
+    const auto it = std::find_if(begin(notes), end(notes), [&](const om_note& n) {
+        return n.p == p.xy();
+        });
+    
+    if (it != notes.end()) {
+        return *it;
+    }
+    return std::nullopt;
+}
+
 void overmap::add_note( const tripoint_om_omt &p, std::string message )
 {
     if( p.z() < -OVERMAP_DEPTH || p.z() > OVERMAP_HEIGHT ) {
@@ -3413,29 +3423,16 @@ void overmap::add_note( const tripoint_om_omt &p, std::string message )
     }
 }
 
-void overmap::mark_note_dangerous( const tripoint_om_omt &p, int radius, bool is_dangerous )
+void overmap::mark_note_dangerous(const tripoint_om_omt& p, const point_om_omt& start, const point_om_omt& end, bool is_dangerous)
 {
     for( om_note &i : layer[p.z() + OVERMAP_DEPTH].notes ) {
         if( p.xy() == i.p ) {
             i.dangerous = is_dangerous;
-            i.danger_radius = radius;
+            i.start = start;
+            i.end = end;
             return;
         }
     }
-}
-
-int overmap::note_danger_radius( const tripoint_om_omt &p ) const
-{
-    if( p.z() < -OVERMAP_DEPTH || p.z() > OVERMAP_HEIGHT ) {
-        return -1;
-    }
-
-    const auto &notes = layer[p.z() + OVERMAP_DEPTH].notes;
-    const auto it = std::find_if( begin( notes ), end( notes ), [&]( const om_note & n ) {
-        return n.p == p.xy();
-    } );
-
-    return ( it != std::end( notes ) ) && it->dangerous ? it->danger_radius : -1;
 }
 
 void overmap::delete_note( const tripoint_om_omt &p )

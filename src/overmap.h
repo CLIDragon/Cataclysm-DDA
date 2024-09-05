@@ -51,7 +51,11 @@ struct om_note {
     std::string text;
     point_om_omt p;
     bool dangerous = false;
-    int danger_radius = 0;
+    // TODO: Ensure start < end and that p inside the region.
+    // Start of dangerous region.
+    point_om_omt start;
+    // End of dangerous region.
+    point_om_omt end;
 };
 
 struct om_map_extra {
@@ -113,6 +117,8 @@ struct map_layer {
     cata::mdarray<oter_id, point_om_omt> terrain;
     cata::mdarray<om_vision_level, point_om_omt> visible;
     cata::mdarray<bool, point_om_omt> explored;
+    // TODO: Change this from a vector. Given the most common thing is to find by point
+    // or iterate std::unordered_map will be fine.
     std::vector<om_note> notes;
     std::vector<om_map_extra> extras;
 };
@@ -264,10 +270,10 @@ class overmap
         bool has_note( const tripoint_om_omt &p ) const;
         bool is_marked_dangerous( const tripoint_om_omt &p ) const;
         const std::string &note( const tripoint_om_omt &p ) const;
+        std::optional<om_note> note_at(const tripoint_om_omt& p);
         void add_note( const tripoint_om_omt &p, std::string message );
         void delete_note( const tripoint_om_omt &p );
-        void mark_note_dangerous( const tripoint_om_omt &p, int radius, bool is_dangerous );
-        int note_danger_radius( const tripoint_om_omt &p ) const;
+        void mark_note_dangerous(const tripoint_om_omt& p, const point_om_omt& start, const point_om_omt& end, bool is_dangerous);
 
         bool has_extra( const tripoint_om_omt &p ) const;
         const map_extra_id &extra( const tripoint_om_omt &p ) const;

@@ -405,13 +405,13 @@ class map_notes_callback : public uilist_callback
                     return true;
                 }
                 if( action == "MARK_DANGER" ) {
-                    if( overmap_buffer.note_danger_radius( note_location() ) >= 0 &&
+                    if( overmap_buffer.note_at( note_location() )->dangerous &&
                         query_yn( _( "Remove dangerous mark?" ) ) ) {
-                        overmap_buffer.mark_note_dangerous( note_location(), 0, false );
+                        overmap_buffer.mark_note_dangerous( note_location(), point_om_omt_zero, point_om_omt_zero, false );
                         menu->ret = UILIST_MAP_NOTE_EDITED;
                         return true;
                     } else {
-                        bool has_mark = overmap_buffer.note_danger_radius( note_location() ) >= 0;
+                        bool has_mark = overmap_buffer.is_marked_dangerous( note_location() );
                         bool has_note = overmap_buffer.has_note( note_location() );
                         std::string query_text = has_mark ?  _( "Edit dangerous mark?" )  : has_note ?
                                                  _( "Mark area as dangerous (to avoid on auto move paths)?" ) :
@@ -422,15 +422,9 @@ class map_notes_callback : public uilist_callback
                             }
                             const int max_amount = 20;
                             // NOLINTNEXTLINE(cata-text-style): No need for two whitespaces
-                            const std::string popupmsg = _( "Danger radius in overmap squares? (0-20)" );
-                            int amount = string_input_popup()
-                                         .title( popupmsg )
-                                         .width( 20 )
-                                         .text( "0" )
-                                         .only_digits( true )
-                                         .query_int();
-                            if( amount >= 0 && amount <= max_amount ) {
-                                overmap_buffer.mark_note_dangerous( note_location(), amount, true );
+                            std::optional<std::pair<point_om_omt, point_om_omt>> pos = query_position();
+                            if( pos ) {
+                                overmap_buffer.mark_note_dangerous( note_location(), pos->first, pos->second, true );
                                 menu->ret = UILIST_MAP_NOTE_EDITED;
                                 return true;
                             }
@@ -495,12 +489,17 @@ static point_abs_omt draw_notes( const tripoint_abs_omt &origin )
                 overmap_buffer.get_description_at( tripoint_abs_sm( sm_pos, origin.z() ) );
             const bool is_dangerous =
                 overmap_buffer.is_marked_dangerous( tripoint_abs_omt( p, origin.z() ) );
-            const int note_danger_radius = overmap_buffer.note_danger_radius( tripoint_abs_omt( p,
-                                           origin.z() ) );
-            nc_color bracket_color = note_danger_radius >= 0 ? c_red : c_light_gray;
-            std::string danger_desc_text = note_danger_radius >= 0 ? string_format(
-                                               _( "DANGEROUS AREA!  (R=%d)" ),
-                                               note_danger_radius ) : is_dangerous ? _( "IN DANGEROUS AREA!" ) : "";
+
+            // We are iterating over a list positions containing notes. Why not a list of notes? Who knows?
+            // TODO: Clean up the notes section of this code. In particular, replace has_note with note_at
+            // note() with note_at()->text. Also promote notes from a wrapper around a string to an object
+            // e.g. by replacing whatever t_notes_vector is doing.
+            om_note note_obj = *overmap_buffer.note_at(tripoint_abs_omt(p, origin.z()));
+
+            
+            nc_color bracket_color = note_obj.dangerous ? c_red : c_light_gray;
+            // TODO: Include start and end points.
+            std::string danger_desc_text = note_obj.dangerous ? _( "DANGEROUS AREA!" ) : "";
             nmenu.addentry_desc(
                 string_format( colorize( _( "[%s] %s" ), bracket_color ), colorize( note_symbol, note_color ),
                                note_text ),
@@ -1893,10 +1892,10 @@ static tripoint_abs_omt display()
         } else if( action == "MARK_DANGER" ) {
             if( overmap_buffer.is_marked_dangerous( curs ) &&
                 query_yn( _( "Remove dangerous mark?" ) ) ) {
-                overmap_buffer.mark_note_dangerous( curs, 0,
+                overmap_buffer.mark_note_dangerous( curs, point_om_omt_zero, point_om_omt_zero,
                                                     false );
             } else {
-                bool has_mark = overmap_buffer.note_danger_radius( curs ) >= 0;
+                bool has_mark = overmap_buffer.is_marked_dangerous( curs );
                 bool has_note = overmap_buffer.has_note( curs );
                 std::string query_text = has_mark ?  _( "Edit dangerous mark?" )  : has_note ?
                                          _( "Mark area as dangerous (to avoid on auto move paths)?" ) :
@@ -1905,17 +1904,16 @@ static tripoint_abs_omt display()
                     if( !has_note ) {
                         create_note( curs );
                     }
-                    const int max_amount = 20;
+
                     // NOLINTNEXTLINE(cata-text-style): No need for two whitespaces
                     const std::string popupmsg = _( "Danger radius in overmap squares? (0-20)" );
-                    int amount = string_input_popup()
-                                 .title( popupmsg )
-                                 .width( 20 )
-                                 .text( "0" )
-                                 .only_digits( true )
-                                 .query_int();
-                    if( amount >= 0 && amount <= max_amount ) {
-                        overmap_buffer.mark_note_dangerous( curs, amount, true );
+
+                    // TODO: Implement the 'query position' function so that it returns a pair of points
+                    // from start to end.
+                    std::optional<std::pair<point_om_omt, point_om_omt>> pos = query_position();
+
+                    if( pos ) {
+                        overmap_buffer.mark_note_dangerous( curs, pos->first, pos->second, true );
                     }
                 }
             }
