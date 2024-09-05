@@ -974,8 +974,9 @@ void overmap::unserialize_view( const JsonObject &jsobj )
                     note_json.read_next( tmp.p.y() );
                     note_json.read_next( tmp.text );
                     note_json.read_next( tmp.dangerous );
-                    note_json.read_next( tmp.danger_radius );
-                    if( note_json.size() > 5 ) {
+                    note_json.read_next( tmp.start );
+                    note_json.read_next( tmp.end );
+                    if( note_json.size() > 6 ) {
                         note_json.throw_error( "Too many values for note" );
                     }
 
@@ -1100,7 +1101,8 @@ void overmap::serialize_view( std::ostream &fout ) const
             json.write( i.p.y() );
             json.write( i.text );
             json.write( i.dangerous );
-            json.write( i.danger_radius );
+            json.write( i.start );
+            json.write( i.end );
             json.end_array();
             fout << std::endl;
         }

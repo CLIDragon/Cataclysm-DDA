@@ -3367,15 +3367,15 @@ const std::string &overmap::note( const tripoint_om_omt &p ) const
         return fallback;
     }
 
-    const auto &notes = layer[p.z() + OVERMAP_DEPTH].notes;
-    const auto it = std::find_if( begin( notes ), end( notes ), [&]( const om_note & n ) {
-        return n.p == p.xy();
-    } );
+    std::optional<om_note> note_obj = note_at( p );
 
-    return ( it != std::end( notes ) ) ? it->text : fallback;
+    if( note_obj ) {
+        return note_obj->text;
+    }
+    return fallback;
 }
 
-std::optional<om_note> overmap::note_at( const tripoint_om_omt &p )
+std::optional<om_note> overmap::note_at( const tripoint_om_omt &p ) const
 {
     if( p.z() < -OVERMAP_DEPTH || p.z() > OVERMAP_HEIGHT ) {
         return std::nullopt;
@@ -3413,13 +3413,11 @@ void overmap::add_note( const tripoint_om_omt &p, std::string message )
 void overmap::mark_note_dangerous( const tripoint_om_omt &p, const point_om_omt &start,
                                    const point_om_omt &end, bool is_dangerous )
 {
-    for( om_note &i : layer[p.z() + OVERMAP_DEPTH].notes ) {
-        if( p.xy() == i.p ) {
-            i.dangerous = is_dangerous;
-            i.start = start;
-            i.end = end;
-            return;
-        }
+    std::optional<om_note> note_obj = note_at( p );
+    if( note_obj ) {
+        note_obj->dangerous = is_dangerous;
+        note_obj->start = start;
+        note_obj->end = end;
     }
 }
 

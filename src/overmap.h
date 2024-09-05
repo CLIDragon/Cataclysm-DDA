@@ -269,7 +269,7 @@ class overmap
 
         bool is_marked_dangerous( const tripoint_om_omt &p ) const;
         const std::string &note( const tripoint_om_omt &p ) const;
-        std::optional<om_note> note_at( const tripoint_om_omt &p );
+        std::optional<om_note> note_at( const tripoint_om_omt &p ) const;
         void add_note( const tripoint_om_omt &p, std::string message );
         void delete_note( const tripoint_om_omt &p );
         void mark_note_dangerous( const tripoint_om_omt &p, const point_om_omt &start,

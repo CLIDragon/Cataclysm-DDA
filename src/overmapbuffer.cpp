@@ -390,7 +390,7 @@ const std::string &overmapbuffer::note( const tripoint_abs_omt &p )
     return empty_string;
 }
 
-std::optional<om_note> overmapbuffer::note_at( const tripoint_abs_omt &p )
+std::optional<om_note> overmapbuffer::note_at( const tripoint_abs_omt &p ) const
 {
     if( const overmap_with_local_coords om_loc = get_existing_om_global( p ) ) {
         return om_loc.om->note_at( om_loc.local );
