@@ -246,7 +246,7 @@ void overmap_ui::draw_overmap_chunk_imgui( const avatar &you, const tripoint_abs
             std::string ter_sym;
             const om_vision_level vision = overmap_buffer.seen( omp );
             const bool seen = vision != om_vision_level::unseen;
-            if( overmap_buffer.has_note( omp ) ) {
+            if( overmap_buffer.note_at( omp ) ) {
                 const std::string &note_text = overmap_buffer.note( omp );
                 std::pair<std::string, nc_color> sym_color = display::overmap_note_symbol_color( note_text );
                 ter_sym = sym_color.first;

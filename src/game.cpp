@@ -12532,7 +12532,7 @@ void game::vertical_notes( int z_before, int z_after )
         if( overmap_buffer.seen( cursp_before ) == om_vision_level::unseen ) {
             continue;
         }
-        if( overmap_buffer.has_note( cursp_after ) ) {
+        if( overmap_buffer.note_at( cursp_after ) ) {
             // Already has a note -> never add an AUTO-note
             continue;
         }

@@ -267,7 +267,6 @@ class overmap
         bool &explored( const tripoint_om_omt &p );
         bool is_explored( const tripoint_om_omt &p ) const;
 
-        bool has_note( const tripoint_om_omt &p ) const;
         bool is_marked_dangerous( const tripoint_om_omt &p ) const;
         const std::string &note( const tripoint_om_omt &p ) const;
         std::optional<om_note> note_at(const tripoint_om_omt& p);

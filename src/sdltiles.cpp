@@ -939,7 +939,7 @@ void cata_tiles::draw_om( const point &dest, const tripoint_abs_omt &center_abs_
             }
 
             if( draw_overlays && uistate.overmap_show_map_notes ) {
-                if( overmap_buffer.has_note( omp ) ) {
+                if( overmap_buffer.note_at( omp ) ) {
                     nc_color ter_color = c_black;
                     std::string ter_sym = " ";
                     // Display notes in all situations, even when not seen

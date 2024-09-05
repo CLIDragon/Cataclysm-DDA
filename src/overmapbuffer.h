@@ -182,7 +182,6 @@ class overmapbuffer
         /**
          * Uses global overmap terrain coordinates.
          */
-        bool has_note( const tripoint_abs_omt &p );
         bool is_marked_dangerous( const tripoint_abs_omt &p );
         const std::string &note( const tripoint_abs_omt &p );
         void add_note( const tripoint_abs_omt &, const std::string &message );

@@ -5057,11 +5057,11 @@ void om_range_mark( const tripoint_abs_omt &origin, int range, bool add_notes,
 
     for( tripoint_abs_omt &pt : note_pts ) {
         if( add_notes ) {
-            if( !overmap_buffer.has_note( pt ) ) {
+            if( !overmap_buffer.note_at( pt ) ) {
                 overmap_buffer.add_note( pt, message );
             }
         } else {
-            if( overmap_buffer.has_note( pt ) && overmap_buffer.note( pt ) == message ) {
+            if( overmap_buffer.note_at( pt ) && overmap_buffer.note( pt ) == message ) {
                 overmap_buffer.delete_note( pt );
             }
         }
@@ -5075,11 +5075,11 @@ void om_line_mark( const tripoint_abs_omt &origin, const tripoint_abs_omt &dest,
 
     for( tripoint_abs_omt &pt : note_pts ) {
         if( add_notes ) {
-            if( !overmap_buffer.has_note( pt ) ) {
+            if( !overmap_buffer.note_at( pt ) ) {
                 overmap_buffer.add_note( pt, message );
             }
         } else {
-            if( overmap_buffer.has_note( pt ) && overmap_buffer.note( pt ) == message ) {
+            if( overmap_buffer.note_at( pt ) && overmap_buffer.note( pt ) == message ) {
                 overmap_buffer.delete_note( pt );
             }
         }

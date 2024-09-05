@@ -392,7 +392,7 @@ class map_notes_callback : public uilist_callback
             if( _selected >= 0 && _selected < static_cast<int>( _notes.size() ) ) {
                 const std::string &action = ctxt.input_to_action( event );
                 if( action == "DELETE_NOTE" ) {
-                    if( overmap_buffer.has_note( note_location() ) &&
+                    if( overmap_buffer.note_at( note_location() ).has_value() &&
                         query_yn( _( "Really delete note?" ) ) ) {
                         overmap_buffer.delete_note( note_location() );
                     }
@@ -412,7 +412,7 @@ class map_notes_callback : public uilist_callback
                         return true;
                     } else {
                         bool has_mark = overmap_buffer.is_marked_dangerous( note_location() );
-                        bool has_note = overmap_buffer.has_note( note_location() );
+                        bool has_note = overmap_buffer.note_at( note_location() ).has_value();
                         std::string query_text = has_mark ?  _( "Edit dangerous mark?" )  : has_note ?
                                                  _( "Mark area as dangerous (to avoid on auto move paths)?" ) :
                                                  _( "Create note and mark area as dangerous (to avoid on auto move paths)?" );
@@ -491,7 +491,7 @@ static point_abs_omt draw_notes( const tripoint_abs_omt &origin )
                 overmap_buffer.is_marked_dangerous( tripoint_abs_omt( p, origin.z() ) );
 
             // We are iterating over a list positions containing notes. Why not a list of notes? Who knows?
-            // TODO: Clean up the notes section of this code. In particular, replace has_note with note_at
+            // TODO: Clean up the notes section of this code. In particular, replace
             // note() with note_at()->text. Also promote notes from a wrapper around a string to an object
             // e.g. by replacing whatever t_notes_vector is doing.
             om_note note_obj = *overmap_buffer.note_at(tripoint_abs_omt(p, origin.z()));
@@ -1886,7 +1886,7 @@ static tripoint_abs_omt display()
         } else if( action == "CREATE_NOTE" ) {
             create_note( curs );
         } else if( action == "DELETE_NOTE" ) {
-            if( overmap_buffer.has_note( curs ) && query_yn( _( "Really delete note?" ) ) ) {
+            if( overmap_buffer.note_at( curs ).has_value() && query_yn(_("Really delete note?"))) {
                 overmap_buffer.delete_note( curs );
             }
         } else if( action == "MARK_DANGER" ) {
@@ -1896,7 +1896,7 @@ static tripoint_abs_omt display()
                                                     false );
             } else {
                 bool has_mark = overmap_buffer.is_marked_dangerous( curs );
-                bool has_note = overmap_buffer.has_note( curs );
+                bool has_note = overmap_buffer.note_at( curs ).has_value();
                 std::string query_text = has_mark ?  _( "Edit dangerous mark?" )  : has_note ?
                                          _( "Mark area as dangerous (to avoid on auto move paths)?" ) :
                                          _( "Create note and mark area as dangerous (to avoid on auto move paths)?" );

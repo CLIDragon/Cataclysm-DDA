@@ -3331,20 +3331,6 @@ std::vector<shared_ptr_fast<npc>> overmap::get_npcs( const
     return result;
 }
 
-bool overmap::has_note( const tripoint_om_omt &p ) const
-{
-    if( p.z() < -OVERMAP_DEPTH || p.z() > OVERMAP_HEIGHT ) {
-        return false;
-    }
-
-    for( const om_note &i : layer[p.z() + OVERMAP_DEPTH].notes ) {
-        if( i.p == p.xy() ) {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool overmap::is_marked_dangerous( const tripoint_om_omt &p ) const
 {
     for( const om_note &i : layer[p.z() + OVERMAP_DEPTH].notes ) {
@@ -3391,13 +3377,14 @@ const std::string &overmap::note( const tripoint_om_omt &p ) const
 
 std::optional<om_note> overmap::note_at(const tripoint_om_omt& p)
 {
-    const auto& notes = layer[p.z() + OVERMAP_DEPTH].notes;
-    const auto it = std::find_if(begin(notes), end(notes), [&](const om_note& n) {
-        return n.p == p.xy();
-        });
-    
-    if (it != notes.end()) {
-        return *it;
+    if (p.z() < -OVERMAP_DEPTH || p.z() > OVERMAP_HEIGHT) {
+        return std::nullopt;
+    }
+
+    for (const om_note& n : layer[p.z() + OVERMAP_DEPTH].notes) {
+        if (n.p == p.xy()) {
+            return n;
+        }
     }
     return std::nullopt;
 }

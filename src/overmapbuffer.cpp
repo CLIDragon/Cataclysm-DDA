@@ -263,7 +263,7 @@ void overmapbuffer::add_note( const tripoint_abs_omt &p, const std::string &mess
 
 void overmapbuffer::delete_note( const tripoint_abs_omt &p )
 {
-    if( has_note( p ) ) {
+    if( note_at( p ) ) {
         overmap_with_local_coords om_loc = get_om_global( p );
         om_loc.om->delete_note( om_loc.local );
     }
@@ -271,9 +271,9 @@ void overmapbuffer::delete_note( const tripoint_abs_omt &p )
 
 void overmapbuffer::mark_note_dangerous(const tripoint_abs_omt& p, const point_om_omt& start, const point_om_omt& end, bool is_dangerous)
 {
-    if( has_note( p ) ) {
+    if( note_at( p ) ) {
         overmap_with_local_coords om_loc = get_om_global( p );
-        om_loc.om->mark_note_dangerous( p, start, end, is_dangerous );
+        om_loc.om->mark_note_dangerous( om_loc.local, start, end, is_dangerous );
     }
 }
 
@@ -369,14 +369,6 @@ bool overmapbuffer::is_omt_generated( const tripoint_abs_omt &loc )
 
     // If the overmap doesn't exist, then for sure the local mapgen
     // hasn't happened.
-    return false;
-}
-
-bool overmapbuffer::has_note( const tripoint_abs_omt &p )
-{
-    if( const overmap_with_local_coords om_loc = get_existing_om_global( p ) ) {
-        return om_loc.om->has_note( om_loc.local );
-    }
     return false;
 }
 
