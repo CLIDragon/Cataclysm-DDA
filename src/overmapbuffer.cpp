@@ -269,7 +269,8 @@ void overmapbuffer::delete_note( const tripoint_abs_omt &p )
     }
 }
 
-void overmapbuffer::mark_note_dangerous(const tripoint_abs_omt& p, const point_om_omt& start, const point_om_omt& end, bool is_dangerous)
+void overmapbuffer::mark_note_dangerous( const tripoint_abs_omt &p, const point_om_omt &start,
+        const point_om_omt &end, bool is_dangerous )
 {
     if( note_at( p ) ) {
         overmap_with_local_coords om_loc = get_om_global( p );
@@ -389,10 +390,10 @@ const std::string &overmapbuffer::note( const tripoint_abs_omt &p )
     return empty_string;
 }
 
-std::optional<om_note> overmapbuffer::note_at(const tripoint_abs_omt& p)
+std::optional<om_note> overmapbuffer::note_at( const tripoint_abs_omt &p )
 {
-    if (const overmap_with_local_coords om_loc = get_existing_om_global(p)) {
-        return om_loc.om->note_at(om_loc.local);
+    if( const overmap_with_local_coords om_loc = get_existing_om_global( p ) ) {
+        return om_loc.om->note_at( om_loc.local );
     }
     return std::nullopt;
 }

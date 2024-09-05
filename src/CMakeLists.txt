@@ -1,19 +1,19 @@
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third-party)
+add_subdirectory( $ {CMAKE_CURRENT_SOURCE_DIR} / third - party )
 
-set(MAIN_CPP ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
-set(MESSAGES_CPP ${CMAKE_CURRENT_SOURCE_DIR}/messages.cpp)
-set(RESOURCE_RC ${CMAKE_CURRENT_SOURCE_DIR}/resource.rc)
+set( MAIN_CPP $ {CMAKE_CURRENT_SOURCE_DIR} / main.cpp )
+set( MESSAGES_CPP $ {CMAKE_CURRENT_SOURCE_DIR} / messages.cpp )
+set( RESOURCE_RC $ {CMAKE_CURRENT_SOURCE_DIR} / resource.rc )
 
-if (WIN32)
-    set(RSRC_RC_DEP "${CMAKE_SOURCE_DIR}/data/cataicon.ico")
-    set(RSRC_RC_DEP "${RSRC_RC_DEP};${CMAKE_SOURCE_DIR}/data/application_manifest.xml")
+if( WIN32 )
+    set( RSRC_RC_DEP "${CMAKE_SOURCE_DIR}/data/cataicon.ico" )
+    set( RSRC_RC_DEP "${RSRC_RC_DEP};${CMAKE_SOURCE_DIR}/data/application_manifest.xml" )
     set_source_files_properties(
-            ${RESOURCE_RC}
-            PROPERTIES
-            OBJECT_DEPENDS "${RSRC_RC_DEP}")
-endif ()
+        $ {RESOURCE_RC}
+        PROPERTIES
+        OBJECT_DEPENDS "${RSRC_RC_DEP}" )
+    endif()
 
-file(GLOB CATACLYSM_DDA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+    file( GLOB CATACLYSM_DDA_SOURCES $ {CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 list(REMOVE_ITEM CATACLYSM_DDA_SOURCES ${MAIN_CPP} ${MESSAGES_CPP})
 

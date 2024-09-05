@@ -494,9 +494,9 @@ static point_abs_omt draw_notes( const tripoint_abs_omt &origin )
             // TODO: Clean up the notes section of this code. In particular, replace
             // note() with note_at()->text. Also promote notes from a wrapper around a string to an object
             // e.g. by replacing whatever t_notes_vector is doing.
-            om_note note_obj = *overmap_buffer.note_at(tripoint_abs_omt(p, origin.z()));
+            om_note note_obj = *overmap_buffer.note_at( tripoint_abs_omt( p, origin.z() ) );
 
-            
+
             nc_color bracket_color = note_obj.dangerous ? c_red : c_light_gray;
             // TODO: Include start and end points.
             std::string danger_desc_text = note_obj.dangerous ? _( "DANGEROUS AREA!" ) : "";
@@ -1886,7 +1886,7 @@ static tripoint_abs_omt display()
         } else if( action == "CREATE_NOTE" ) {
             create_note( curs );
         } else if( action == "DELETE_NOTE" ) {
-            if( overmap_buffer.note_at( curs ).has_value() && query_yn(_("Really delete note?"))) {
+            if( overmap_buffer.note_at( curs ).has_value() && query_yn( _( "Really delete note?" ) ) ) {
                 overmap_buffer.delete_note( curs );
             }
         } else if( action == "MARK_DANGER" ) {

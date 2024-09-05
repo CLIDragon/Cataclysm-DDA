@@ -3340,9 +3340,9 @@ bool overmap::is_marked_dangerous( const tripoint_om_omt &p ) const
             return true;
         }
 
-        inclusive_rectangle<point_om_omt> rect(i.start, i.end);
+        inclusive_rectangle<point_om_omt> rect( i.start, i.end );
 
-        if (rect.contains(p.xy())) {
+        if( rect.contains( p.xy() ) ) {
             return true;
         }
     }
@@ -3375,14 +3375,14 @@ const std::string &overmap::note( const tripoint_om_omt &p ) const
     return ( it != std::end( notes ) ) ? it->text : fallback;
 }
 
-std::optional<om_note> overmap::note_at(const tripoint_om_omt& p)
+std::optional<om_note> overmap::note_at( const tripoint_om_omt &p )
 {
-    if (p.z() < -OVERMAP_DEPTH || p.z() > OVERMAP_HEIGHT) {
+    if( p.z() < -OVERMAP_DEPTH || p.z() > OVERMAP_HEIGHT ) {
         return std::nullopt;
     }
 
-    for (const om_note& n : layer[p.z() + OVERMAP_DEPTH].notes) {
-        if (n.p == p.xy()) {
+    for( const om_note &n : layer[p.z() + OVERMAP_DEPTH].notes ) {
+        if( n.p == p.xy() ) {
             return n;
         }
     }
@@ -3410,7 +3410,8 @@ void overmap::add_note( const tripoint_om_omt &p, std::string message )
     }
 }
 
-void overmap::mark_note_dangerous(const tripoint_om_omt& p, const point_om_omt& start, const point_om_omt& end, bool is_dangerous)
+void overmap::mark_note_dangerous( const tripoint_om_omt &p, const point_om_omt &start,
+                                   const point_om_omt &end, bool is_dangerous )
 {
     for( om_note &i : layer[p.z() + OVERMAP_DEPTH].notes ) {
         if( p.xy() == i.p ) {
