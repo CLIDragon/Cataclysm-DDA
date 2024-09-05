@@ -2190,7 +2190,7 @@ std::pair<std::string, nc_color> oter_symbol_and_color( const tripoint_abs_omt &
         ret.first = "*";
         ret.second = c_red;
         opts.drawn_mission = true;
-    } else if( blink && uistate.overmap_show_map_notes && overmap_buffer.has_note( omp ) ) {
+    } else if( blink && uistate.overmap_show_map_notes && overmap_buffer.note_at( omp ) ) {
         // Display notes in all situations, even when not seen
         std::tie( ret.first, ret.second,
                   std::ignore ) = overmap_ui::get_note_display_info( overmap_buffer.note( omp ) );
