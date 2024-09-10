@@ -16,4 +16,15 @@ class scent_trace
         int initial_strength; // Original strength, doesn't weaken, it's just adjusted by age.
 };
 
+struct om_note {
+    std::string text;
+    point_om_omt p;
+    bool dangerous = false;
+    // TODO: Ensure start < end and that p inside the region.
+    // Start of dangerous region.
+    point_om_omt start;
+    // End of dangerous region.
+    point_om_omt end;
+};
+
 #endif // CATA_SRC_OVERMAP_TYPES_H

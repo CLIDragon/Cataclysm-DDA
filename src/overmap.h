@@ -47,17 +47,6 @@ template<typename Point>
 struct directed_path;
 } // namespace pf
 
-struct om_note {
-    std::string text;
-    point_om_omt p;
-    bool dangerous = false;
-    // TODO: Ensure start < end and that p inside the region.
-    // Start of dangerous region.
-    point_om_omt start;
-    // End of dangerous region.
-    point_om_omt end;
-};
-
 struct om_map_extra {
     map_extra_id id;
     point_om_omt p;

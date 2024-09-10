@@ -54,6 +54,7 @@
 #include "overmap_types.h"
 #include "overmapbuffer.h"
 #include "point.h"
+#include "popup.h"
 #include "regional_settings.h"
 #include "rng.h"
 #include "sounds.h"
@@ -422,7 +423,10 @@ class map_notes_callback : public uilist_callback
                             }
                             const int max_amount = 20;
                             // NOLINTNEXTLINE(cata-text-style): No need for two whitespaces
-                            std::optional<std::pair<point_om_omt, point_om_omt>> pos = query_position();
+                            std::optional<std::pair<point_om_omt, point_om_omt>> pos = std::make_pair( point_om_omt_zero,
+                                    point_om_omt_zero );
+                            // query_position()
+
                             if( pos ) {
                                 overmap_buffer.mark_note_dangerous( note_location(), pos->first, pos->second, true );
                                 menu->ret = UILIST_MAP_NOTE_EDITED;
@@ -1910,9 +1914,47 @@ static tripoint_abs_omt display()
 
                     // TODO: Implement the 'query position' function so that it returns a pair of points
                     // from start to end.
-                    std::optional<std::pair<point_om_omt, point_om_omt>> pos = query_position();
+                    std::optional<std::pair<point_om_omt, point_om_omt>> pos = std::nullopt;
+
+                    // TODO: Extract this to a function (query_position()).
+                    do {
+                        static_popup pop;
+                        pop.on_top( true );
+                        pop.message( "%s", _( "Select first point." ) );
+
+                        tripoint_abs_omt pot1 = display();
+                        pop.wait_message( "Selected point %d %d", pot1.x(), pot1.y() );
+                        pop.message( "%s", _( "Select second point." ) );
+                        tripoint_abs_omt pot2 = display();
+
+                        // Must be on the same z-level.
+                        // TODO: Remove this constraint (requires rewriting notes).
+                        if( pot1.z() != pot2.z() ) {
+                            pop.message( "%s", "Cannot have start and end on different Z-levels." );
+                            pos = std::nullopt;
+                            break;
+                        }
+
+                        // Canonicalise the points.
+                        if( pot1.x() > pot2.x() ) {
+                            std::swap( pot1, pot2 );
+                        } else if( pot1.x() == pot2.x() && pot1.y() < pot2.y() ) {
+                            std::swap( pot1, pot2 );
+                        }
+
+                        // TODO: Add debug messages if this does not succeed.
+                        if( const overmap_with_local_coords om_loc = overmap_buffer.get_existing_om_global( pot1 ) ) {
+                            if( const overmap_with_local_coords om_loc2 = overmap_buffer.get_existing_om_global( pot2 ) ) {
+                                pos = std::make_pair( om_loc.local.xy(), om_loc2.local.xy() );
+                            }
+                        }
+                    } while( false );
+
+                    // Draw the region (after canonicalising the points).
 
                     if( pos ) {
+                        popup( "Selected points: (%d, %d), (%d, %d)", pos->first.x(), pos->first.y(), pos->second.x(),
+                               pos->second.y() );
                         overmap_buffer.mark_note_dangerous( curs, pos->first, pos->second, true );
                     }
                 }
