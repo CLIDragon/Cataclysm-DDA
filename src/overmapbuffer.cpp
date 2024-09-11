@@ -272,7 +272,9 @@ void overmapbuffer::delete_note( const tripoint_abs_omt &p )
 void overmapbuffer::mark_note_dangerous( const tripoint_abs_omt &p, const point_om_omt &start,
         const point_om_omt &end, bool is_dangerous )
 {
-    if( note_at( p ) ) {
+    DebugLog( D_ERROR, D_GAME ) << "mark_note_dangerous called at (" << p.x() << ", " << p.y() << ")";
+    std::optional<om_note> note_ = note_at( p );
+    if( note_.has_value() ) {
         overmap_with_local_coords om_loc = get_om_global( p );
         om_loc.om->mark_note_dangerous( om_loc.local, start, end, is_dangerous );
     }
@@ -1612,32 +1614,27 @@ void overmapbuffer::despawn_monster( const monster &critter )
     }
 }
 
-overmapbuffer::t_notes_vector overmapbuffer::get_notes( int z, const std::string_view pattern )
+std::vector<std::pair<point_abs_omt, om_note>> overmapbuffer::get_all_notes( int z ) const
 {
-    t_notes_vector result;
+    if( z < -OVERMAP_DEPTH || z > OVERMAP_HEIGHT ) {
+        return {};
+    }
+
+    std::vector<std::pair<point_abs_omt, om_note>> result;
     for( auto &it : overmaps ) {
         const overmap &om = *it.second;
-        for( int i = 0; i < OMAPX; i++ ) {
-            for( int j = 0; j < OMAPY; j++ ) {
-                tripoint_om_omt p( i, j, z );
-                const std::string &note = om.note( p );
-                if( note.empty() ) {
-                    continue;
-                }
-                if( !lcmatch( note, pattern ) ) {
-                    // pattern not found in note text
-                    continue;
-                }
-                result.emplace_back(
-                    project_combine( om.pos(), p.xy() ),
-                    om.note( p )
-                );
-            }
+        std::vector<om_note> notes = om.get_notes( z );
+        for( const om_note note : notes ) {
+            result.emplace_back( std::make_pair(
+                                     project_combine( om.pos(), note.p ),
+                                     note )
+                               );
         }
     }
     return result;
 }
 
+// TODO: Rewrite this in the same fashion as notes.
 overmapbuffer::t_extras_vector overmapbuffer::get_extras( int z, const std::string_view pattern )
 {
     overmapbuffer::t_extras_vector result;

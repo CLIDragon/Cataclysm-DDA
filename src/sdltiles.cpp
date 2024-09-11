@@ -942,9 +942,10 @@ void cata_tiles::draw_om( const point &dest, const tripoint_abs_omt &center_abs_
                 if( overmap_buffer.note_at( omp ) ) {
                     nc_color ter_color = c_black;
                     std::string ter_sym = " ";
+                    std::string note_text = overmap_buffer.note_at( omp )->text;
                     // Display notes in all situations, even when not seen
                     std::tie( ter_sym, ter_color, std::ignore ) =
-                        overmap_ui::get_note_display_info( overmap_buffer.note( omp ) );
+                        overmap_ui::get_note_display_info( note_text );
 
                     std::string note_name = "note_" + ter_sym + "_" + string_from_color( ter_color );
                     draw_from_id_string( note_name, TILE_CATEGORY::OVERMAP_NOTE, "overmap_note",

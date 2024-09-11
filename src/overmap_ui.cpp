@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstddef>
 #include <functional>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <optional>
@@ -348,7 +349,7 @@ static void draw_camp_labels( const catacurses::window &w, const tripoint_abs_om
 class map_notes_callback : public uilist_callback
 {
     private:
-        overmapbuffer::t_notes_vector _notes;
+        std::vector<std::pair<point_abs_omt, om_note>> _notes;
         int _z;
         int _selected = 0;
 
@@ -365,7 +366,7 @@ class map_notes_callback : public uilist_callback
             return tripoint_abs_omt( point_selected(), _z );
         }
     public:
-        map_notes_callback( const overmapbuffer::t_notes_vector &notes, int z )
+        map_notes_callback( const std::vector<std::pair<point_abs_omt, om_note>> &notes, int z )
             : _notes( notes ), _z( z ) {
             ui.on_screen_resize( [this]( ui_adaptor & ui ) {
                 w_preview = catacurses::newwin( npm_height + 2, max_note_display_length - npm_width - 1,
@@ -472,18 +473,19 @@ static point_abs_omt draw_notes( const tripoint_abs_omt &origin )
                          colorize( ctxt.get_desc( "QUIT", 1 ), c_yellow )
                      );
         int row = 0;
-        overmapbuffer::t_notes_vector notes = overmap_buffer.get_all_notes( origin.z() );
+        std::vector<std::pair<point_abs_omt, om_note>> notes = overmap_buffer.get_all_notes( origin.z() );
         nmenu.title = string_format( _( "Map notes (%d)" ), notes.size() );
-        for( const auto &point_with_note : notes ) {
-            const point_abs_omt p = point_with_note.first;
+        for( const std::pair<point_abs_omt, om_note> &note_pair : notes ) {
+            const point_abs_omt p = note_pair.first;
+            const om_note note_obj = note_pair.second;
             if( first && p == origin.xy() ) {
                 nmenu.selected = row;
             }
-            const std::string &note = point_with_note.second;
-            auto om_symbol = get_note_display_info( note );
+            auto om_symbol = get_note_display_info( note_obj.text );
             const nc_color note_color = std::get<1>( om_symbol );
             const std::string note_symbol = std::string( 1, std::get<0>( om_symbol ) );
-            const std::string note_text = note.substr( std::get<2>( om_symbol ), std::string::npos );
+            const std::string note_text = note_obj.text.substr( std::get<2>( om_symbol ), std::string::npos );
+
             point_abs_omt p_omt( p );
             const point_abs_omt p_player = get_player_character().global_omt_location().xy();
             const int distance_player = rl_dist( p_player, p_omt );
@@ -498,9 +500,6 @@ static point_abs_omt draw_notes( const tripoint_abs_omt &origin )
             // TODO: Clean up the notes section of this code. In particular, replace
             // note() with note_at()->text. Also promote notes from a wrapper around a string to an object
             // e.g. by replacing whatever t_notes_vector is doing.
-            om_note note_obj = *overmap_buffer.note_at( tripoint_abs_omt( p, origin.z() ) );
-
-
             nc_color bracket_color = note_obj.dangerous ? c_red : c_light_gray;
             // TODO: Include start and end points.
             std::string danger_desc_text = note_obj.dangerous ? _( "DANGEROUS AREA!" ) : "";
@@ -1908,16 +1907,11 @@ static tripoint_abs_omt display()
                     if( !has_note ) {
                         create_note( curs );
                     }
-
-                    // NOLINTNEXTLINE(cata-text-style): No need for two whitespaces
-                    const std::string popupmsg = _( "Danger radius in overmap squares? (0-20)" );
-
-                    // TODO: Implement the 'query position' function so that it returns a pair of points
-                    // from start to end.
-                    std::optional<std::pair<point_om_omt, point_om_omt>> pos = std::nullopt;
+                    tripoint_abs_omt note_pos = tripoint_abs_omt{ curs.x(), curs.y(), curs.z() };
 
                     // TODO: Extract this to a function (query_position()).
-                    do {
+                    // TODO: Enforce the region to contain the given note.
+                    auto query_position = [&]() -> std::optional<std::pair<point_om_omt, point_om_omt>> {
                         static_popup pop;
                         pop.on_top( true );
                         pop.message( "%s", _( "Select first point." ) );
@@ -1929,33 +1923,42 @@ static tripoint_abs_omt display()
 
                         // Must be on the same z-level.
                         // TODO: Remove this constraint (requires rewriting notes).
-                        if( pot1.z() != pot2.z() ) {
+                        if( pot1.z() != pot2.z() )
+                        {
                             pop.message( "%s", "Cannot have start and end on different Z-levels." );
-                            pos = std::nullopt;
-                            break;
+                            return std::nullopt;
                         }
 
                         // Canonicalise the points.
-                        if( pot1.x() > pot2.x() ) {
+                        if( pot1.x() > pot2.x() )
+                        {
                             std::swap( pot1, pot2 );
-                        } else if( pot1.x() == pot2.x() && pot1.y() < pot2.y() ) {
+                        } else if( pot1.x() == pot2.x() && pot1.y() < pot2.y() )
+                        {
                             std::swap( pot1, pot2 );
                         }
 
                         // TODO: Add debug messages if this does not succeed.
-                        if( const overmap_with_local_coords om_loc = overmap_buffer.get_existing_om_global( pot1 ) ) {
+                        if( const overmap_with_local_coords om_loc = overmap_buffer.get_existing_om_global( pot1 ) )
+                        {
                             if( const overmap_with_local_coords om_loc2 = overmap_buffer.get_existing_om_global( pot2 ) ) {
-                                pos = std::make_pair( om_loc.local.xy(), om_loc2.local.xy() );
+                                return std::optional( std::make_pair( om_loc.local.xy(), om_loc2.local.xy() ) );
                             }
                         }
-                    } while( false );
+                    };
 
-                    // Draw the region (after canonicalising the points).
+                    auto pos = query_position();
+
+                    // TODO: Draw the region (after canonicalising the points).
 
                     if( pos ) {
-                        popup( "Selected points: (%d, %d), (%d, %d)", pos->first.x(), pos->first.y(), pos->second.x(),
-                               pos->second.y() );
-                        overmap_buffer.mark_note_dangerous( curs, pos->first, pos->second, true );
+                        // FIXME: mark_note_dangerous() is being called from the correct position, but only
+                        // after a delay (possibly something to do with the UI? and the dangerous attribute
+                        // is not saving. To resolve, fix the UI issues first (i.e. the popup remaining open too long)
+                        // which should hopefully solve the other issues as well.
+                        DebugLog( D_ERROR, D_GAME ) << "Selected pos1: " << pos->first.x() << ", " << pos->first.y() <<
+                                                    " pos2: " << pos->second.x() << ", " << pos->second.y();
+                        overmap_buffer.mark_note_dangerous( note_pos, pos->first, pos->second, true );
                     }
                 }
             }

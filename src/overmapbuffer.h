@@ -405,14 +405,12 @@ class overmapbuffer
          */
         bool is_omt_generated( const tripoint_abs_omt &loc );
 
-        using t_point_with_note = std::pair<point_abs_omt, std::string>;
-        using t_notes_vector = std::vector<t_point_with_note>;
-        t_notes_vector get_all_notes( int z ) {
-            return get_notes( z, {} ); // empty string => don't filter notes
-        }
-        t_notes_vector find_notes( int z, const std::string_view pattern ) {
-            return get_notes( z, pattern ); // filter with pattern
-        }
+        /**
+          * Get a list of notes in the (loaded) overmaps.
+          * @param z only this specific z-level is search for notes.
+          */
+        std::vector<std::pair<point_abs_omt, om_note>> get_all_notes( int z ) const;
+
         using t_point_with_extra = std::pair<point_abs_omt, map_extra_id>;
         using t_extras_vector = std::vector<t_point_with_extra>;
         t_extras_vector get_all_extras( int z ) {
@@ -564,13 +562,6 @@ class overmapbuffer
         // Global count of number of overmaps generated for this world.
         int overmap_count = 0;
 
-        /**
-         * Get a list of notes in the (loaded) overmaps.
-         * @param z only this specific z-level is search for notes.
-         * @param pattern only notes that contain this pattern are returned.
-         * If the pattern is NULL, every note matches.
-         */
-        t_notes_vector get_notes( int z, std::string_view pattern );
         /**
          * Get a list of map extras in the (loaded) overmaps.
          * @param z only this specific z-level is search for map extras.

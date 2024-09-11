@@ -355,6 +355,10 @@ class overmap
                                        &predicate )
                                        const;
         point_om_omt get_fallback_road_connection_point() const;
+
+        std::vector<om_note> get_notes( int z ) const {
+            return layer[z + OVERMAP_DEPTH].notes;
+        };
     private:
         friend class overmapbuffer;
 
