@@ -381,7 +381,7 @@ static void load_font( ImGuiIO &io, const std::vector<std::string> &typefaces,
 #ifdef IMGUI_ENABLE_FREETYPE
     if( existing_typeface.find( "Terminus.ttf" ) != std::string::npos ||
         existing_typeface.find( "unifont.ttf" ) != std::string::npos ) {
-        config.FontBuilderFlags = ImGuiFreeTypeBuilderFlags_ForceAutoHint;
+        config.FontBuilderFlags = ImGuiFreeTypeBuilderFlags_Bitmap;
     }
 #endif
 
