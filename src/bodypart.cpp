@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <tracy/public/tracy/Tracy.hpp>
 
 #include "assign.h"
 #include "body_part_set.h"
@@ -256,6 +257,7 @@ bool body_part_type::has_type( const body_part_type::type &type ) const
 
 bool body_part_type::has_flag( const json_character_flag &flag ) const
 {
+    ZoneScoped;
     return flags.count( flag ) > 0;
 }
 
@@ -927,7 +929,8 @@ bool bodypart::is_limb_overencumbered() const
 
 bool bodypart::has_conditional_flag( const json_character_flag &flag ) const
 {
-    return id->conditional_flags.count( flag ) > 0 && hp_cur > id->health_limit &&
+    ZoneScoped;
+    return hp_cur > id->health_limit && id->conditional_flags.count( flag ) > 0 &&
            !is_limb_overencumbered();
 }
 

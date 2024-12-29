@@ -5,6 +5,7 @@
 #include <functional>
 #include <memory>
 #include <unordered_set>
+#include <tracy/public/tracy/Tracy.hpp>
 
 #include "activity_type.h"
 #include "avatar_action.h"
@@ -145,6 +146,7 @@ bool Character::has_trait_variant( const trait_and_var &test ) const
 
 bool Character::has_trait_flag( const json_character_flag &b ) const
 {
+    ZoneScoped;
     auto iter = trait_flag_cache.find( b );
     if( iter != trait_flag_cache.end() ) {
         return iter->second;

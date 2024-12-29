@@ -6,6 +6,7 @@
 #include <optional>
 #include <type_traits>
 #include <unordered_set>
+#include <tracy/public/tracy/Tracy.hpp>
 
 #include "bodypart.h"
 #include "cata_assert.h"
@@ -1615,6 +1616,7 @@ void load_effect_type( const JsonObject &jo, const std::string_view src )
 
 bool effect::has_flag( const flag_id &flag ) const
 {
+    ZoneScoped;
     return eff_type->has_flag( flag );
 }
 

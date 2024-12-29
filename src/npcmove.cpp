@@ -10,6 +10,7 @@
 #include <numeric>
 #include <ostream>
 #include <tuple>
+#include <tracy/public/tracy/Tracy.hpp>
 
 #include "active_item_cache.h"
 #include "activity_handlers.h"

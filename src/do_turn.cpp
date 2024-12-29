@@ -75,6 +75,9 @@
 #include "weather_type.h"
 #include "worldfactory.h"
 
+
+#include "tracy/public/tracy/Tracy.hpp"
+
 static const activity_id ACT_AUTODRIVE( "ACT_AUTODRIVE" );
 static const activity_id ACT_FIRSTAID( "ACT_FIRSTAID" );
 static const activity_id ACT_OPERATION( "ACT_OPERATION" );
@@ -445,6 +448,7 @@ void overmap_npc_move()
 // Returns true if game is over (death, saved, quit, etc)
 bool do_turn()
 {
+    ZoneScoped;
     if( g->is_game_over() ) {
         return turn_handler::cleanup_at_end();
     }
@@ -768,4 +772,5 @@ bool do_turn()
 #endif
 
     return false;
+
 }

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <tracy/public/tracy/Tracy.hpp>
 
 #include "bodypart.h"
 #include "character.h"
@@ -1945,6 +1946,7 @@ float Character::mabuff_attack_cost_mult() const
 
 bool Character::has_mabuff_flag( const json_character_flag &flag ) const
 {
+    ZoneScoped;
     return search_ma_buff_effect( *effects, [flag]( const ma_buff & b, const effect & ) {
         return b.has_flag( flag );
     } );

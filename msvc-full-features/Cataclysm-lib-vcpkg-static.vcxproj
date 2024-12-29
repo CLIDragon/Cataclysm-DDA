@@ -117,9 +117,12 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release-NoTiles'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>_CONSOLE;SDL_SOUND;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CONSOLE;SDL_SOUND;%(PreprocessorDefinitions);TRACY_ENABLE</PreprocessorDefinitions>
     </ClCompile>
     <PreBuildEvent>
       <Command>..\msvc-full-features\prebuild.cmd</Command>
@@ -146,6 +149,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(MSBuildThisFileDirectory)..\pch;$(MSBuildThisFileDirectory)..\src;$(MSBuildThisFileDirectory)..\src\third-party;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

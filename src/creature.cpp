@@ -11,6 +11,7 @@
 #include <stack>
 #include <string>
 #include <tuple>
+#include <tracy/public/tracy/Tracy.hpp>
 
 #include "anatomy.h"
 #include "body_part_set.h"
@@ -1952,6 +1953,7 @@ bool Creature::has_effect_with_flag( const flag_id &flag, const bodypart_id &bp 
 
 bool Creature::has_effect_with_flag( const flag_id &flag ) const
 {
+    ZoneScoped;
     return std::any_of( effects->begin(), effects->end(), [&]( const auto & elem ) {
         // effect::has_flag currently delegates to effect_type::has_flag
         return elem.first->has_flag( flag );

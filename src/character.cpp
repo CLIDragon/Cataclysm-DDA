@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <tracy/public/tracy/Tracy.hpp>
 
 #include "action.h"
 #include "activity_actor_definitions.h"
@@ -11830,6 +11831,7 @@ int Character::book_fun_for( const item &book, const Character &p ) const
 
 bool Character::has_bionic_with_flag( const json_character_flag &flag ) const
 {
+    ZoneScoped;
     auto iter = bio_flag_cache.find( flag );
     if( iter != bio_flag_cache.end() ) {
         return iter->second;
@@ -11871,6 +11873,7 @@ int Character::count_bionic_with_flag( const json_character_flag &flag ) const
 
 bool Character::has_bodypart_with_flag( const json_character_flag &flag ) const
 {
+    ZoneScoped;
     for( const std::pair<const bodypart_str_id, bodypart> &elem : get_body() ) {
         if( elem.first->has_flag( flag ) ) {
             return true;
@@ -11883,13 +11886,11 @@ bool Character::has_bodypart_with_flag( const json_character_flag &flag ) const
                     if( eff.has_flag( flag_EFFECT_LIMB_DISABLE_CONDITIONAL_FLAGS ) ) {
                         disabled = true;
                         break;
-
                     }
                 }
             }
             if( !disabled ) {
                 return true;
-
             }
         }
     }
@@ -11923,6 +11924,7 @@ int Character::count_bodypart_with_flag( const json_character_flag &flag ) const
 
 bool Character::has_flag( const json_character_flag &flag ) const
 {
+    ZoneScoped;
     // If this is a performance problem create a map of flags stored for a character and updated on trait, mutation, bionic add/remove, activate/deactivate, effect gain/loss
     return has_trait_flag( flag ) ||
            has_bionic_with_flag( flag ) ||
