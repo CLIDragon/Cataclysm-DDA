@@ -194,8 +194,8 @@ static option_overrides_t extract_option_overrides( const std::string_view optio
     return ret;
 }
 
-struct CataListener : Catch::TestEventListenerBase {
-    using TestEventListenerBase::TestEventListenerBase;
+struct CataListener : Catch::EventListenerBase {
+    using EventListenerBase::EventListenerBase;
 
     void testRunStarting( Catch::TestRunInfo const & ) override {
         if( needs_game ) {
@@ -222,7 +222,7 @@ struct CataListener : Catch::TestEventListenerBase {
     }
 
     void sectionStarting( Catch::SectionInfo const &sectionInfo ) override {
-        TestEventListenerBase::sectionStarting( sectionInfo );
+        EventListenerBase::sectionStarting( sectionInfo );
         // Initialize the cata RNG with the Catch seed for reproducible tests
         rng_set_engine_seed( m_config->rngSeed() );
         // Clear the message log so on test failures we see only messages from
@@ -231,26 +231,26 @@ struct CataListener : Catch::TestEventListenerBase {
     }
 
     void sectionEnded( Catch::SectionStats const &sectionStats ) override {
-        TestEventListenerBase::sectionEnded( sectionStats );
+        EventListenerBase::sectionEnded( sectionStats );
         if( !sectionStats.assertions.allPassed() ||
             m_config->includeSuccessfulResults() ) {
             std::vector<std::pair<std::string, std::string>> messages =
                         Messages::recent_messages( 0 );
             if( !messages.empty() ) {
                 if( !sectionStats.assertions.allPassed() ) {
-                    stream << "Log messages during failed test:\n";
+                    std::cout << "Log messages during failed test:\n";
                 } else {
-                    stream << "Log messages during successful test:\n";
+                    std::cout << "Log messages during successful test:\n";
                 }
             }
             for( const std::pair<std::string, std::string> &message : messages ) {
-                stream << message.first << ": " << message.second << '\n';
+                std::cout << message.first << ": " << message.second << '\n';
             }
             Messages::clear_messages();
         }
     }
 
-    bool assertionEnded( Catch::AssertionStats const &assertionStats ) override {
+    void assertionEnded( Catch::AssertionStats const &assertionStats ) override {
 #ifdef BACKTRACE
         Catch::AssertionResult const &result = assertionStats.assertionResult;
 
@@ -262,7 +262,7 @@ struct CataListener : Catch::TestEventListenerBase {
         }
 #endif
 
-        return TestEventListenerBase::assertionEnded( assertionStats );
+        return EventListenerBase::assertionEnded( assertionStats );
     }
 
 };
@@ -293,7 +293,7 @@ int main( int argc, const char *argv[] )
 
     std::vector<const char *> arg_vec( argv, argv + argc );
 
-    using namespace Catch::clara;
+    using namespace Catch::Clara;
     std::string option_overrides;
     std::string mods_string;
     std::string check_plural_str;
@@ -390,16 +390,16 @@ int main( int argc, const char *argv[] )
     {
         using namespace Catch;
         Config const &config = session.config();
-        std::vector<TestCase> const &tcs = filterTests(
-                                               getAllTestCasesSorted( config ),
-                                               config.testSpec(),
-                                               config
-                                           );
-        for( TestCase const &tc : tcs ) {
+        std::vector < TestCaseHandle > const &tcs = filterTests(
+                    getAllTestCasesSorted( config ),
+                    config.testSpec(),
+                    config
+                );
+        for( TestCaseHandle const &tc : tcs ) {
             // NOLINTNEXTLINE(cata-tests-must-restore-global-state)
             needs_game = true;
-            for( std::string const &tag : tc.getTestCaseInfo().tags ) {
-                if( tag == "nogame" ) {
+            for( const Tag &tag : tc.getTestCaseInfo().tags ) {
+                if( tag.original == "nogame" ) {
                     // NOLINTNEXTLINE(cata-tests-must-restore-global-state)
                     needs_game = false;
                     break;

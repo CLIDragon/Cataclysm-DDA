@@ -1,6 +1,6 @@
 #include "map_helpers.h"
 
-#include "catch/catch.hpp"
+#include "catch/catch_amalgamated.hpp"
 
 #include <functional>
 #include <list>

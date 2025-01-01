@@ -8,8 +8,13 @@
 // this file.
 
 // IWYU pragma: begin_exports
-#include "catch/catch.hpp"
+#include "catch/catch_amalgamated.hpp"
 #include "stringmaker.h"
 // IWYU pragma: end_exports
+
+// Export symbols to maintain compatibility with version 2.13.7 Catch.
+
+using Approx = Catch::Approx;
+
 
 #endif // CATA_TESTS_CATA_CATCH_H

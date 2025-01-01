@@ -4,7 +4,7 @@
 
 #include "action.h"
 #include "avatar.h"
-#include "catch/catch.hpp"
+#include "catch/catch_amalgamated.hpp"
 #include "damage.h"
 #include "enums.h"
 #include "game.h"
@@ -57,7 +57,7 @@ static void validate_part_count( const vehicle &veh, const int target_velocity,
     if( target_velocity > 0 ) {
         REQUIRE( veh.velocity > 200 );
     }
-    REQUIRE( to_degrees( veh.face.dir() ) == Approx( to_degrees( face_dir ) ).epsilon( 0.1f ) );
+    REQUIRE( to_degrees( veh.face.dir() ) == Catch::Approx( to_degrees( face_dir ) ).epsilon( 0.1f ) );
     CHECK( veh.part_count_real() == real_parts );
     CHECK( num_fake_parts( veh ) == fake_parts );
     CHECK( num_active_fake_parts( veh ) == active_fakes );

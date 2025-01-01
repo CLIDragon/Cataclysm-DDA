@@ -262,8 +262,8 @@ static int test_efficiency( const vproto_id &veh_id, int &expected_mass,
     const float fuel_percentage_used = fuel_level * ( starting_fuel_per - fuel_left );
     int adjusted_tiles_travelled = tiles_travelled / fuel_percentage_used;
     if( target_distance >= 0 ) {
-        INFO( "Target distance: " << target_distance )
-        INFO( "Travelled distance: " << adjusted_tiles_travelled )
+        INFO( "Target distance: " << target_distance );
+        INFO( "Travelled distance: " << adjusted_tiles_travelled );
         CHECK( adjusted_tiles_travelled >= min_dist );
         CHECK( adjusted_tiles_travelled <= max_dist );
     }

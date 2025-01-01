@@ -6,7 +6,7 @@
 #include "enum_traits.h"
 #include "text_snippets.h"
 
-class IsOneOf : public Catch::MatcherBase<std::string>
+class IsOneOf : public Catch::Matchers::MatcherBase<std::string>
 {
         std::set< std::string > values;
     public:

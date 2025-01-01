@@ -152,7 +152,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
-      <PreprocessorDefinitions>TILES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CATCH_AMALGAMATED_CUSTOM_MAIN;TILES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -181,9 +181,11 @@
   <ItemGroup>
     <ClInclude Include="..\tests\*.h" />
     <ClInclude Include="..\src\messages.h" />
+    <ClInclude Include="..\tests\catch\catch_amalgamated.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\tests\*.cpp" />
+    <ClCompile Include="..\tests\catch\catch_amalgamated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\msvc-full-features\Cataclysm-lib-vcpkg-static.vcxproj">

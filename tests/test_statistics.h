@@ -205,7 +205,7 @@ class statistics
         }
 };
 
-class BinomialMatcher : public Catch::MatcherBase<int>
+class BinomialMatcher : public Catch::Matchers::MatcherBase<int>
 {
     public:
         BinomialMatcher( int num_samples, double p, double max_deviation );

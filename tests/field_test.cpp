@@ -339,7 +339,7 @@ TEST_CASE( "wandering_field_test", "[field]" )
     m.process_fields();
 
     {
-        INFO( "fd_smoke should've spawned around the vent in a 5x5 area" )
+        INFO( "fd_smoke should've spawned around the vent in a 5x5 area" );
         CHECK( count_fields( fd_smoke ) == 25 );
     }
 

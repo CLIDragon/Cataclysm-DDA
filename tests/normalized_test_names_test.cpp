@@ -18,9 +18,9 @@ TEST_CASE( "enforce_normalized_test_cases" )
     INFO( "Prefer simple characters for TEST_CASE names to avoid need for escaping" );
     CAPTURE( allowed_chars );
 
-    for( const Catch::TestCase &tc :
+    for( const Catch::TestCaseHandle &tc :
          Catch::getAllTestCasesSorted( *Catch::getCurrentContext().getConfig() ) ) {
-        const std::string &test_case_name = tc.name;
+        const std::string &test_case_name = tc.getTestCaseInfo().name;
         CAPTURE( test_case_name );
         int i = 0;
         for( ; i < static_cast<int>( test_case_name.size() ); i++ ) {

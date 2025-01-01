@@ -4,7 +4,7 @@
 
 #include "avatar.h"
 #include "calendar.h"
-#include "catch/catch.hpp"
+#include "catch/catch_amalgamated.hpp"
 #include "item.h"
 #include "map.h"
 #include "map_helpers.h"
