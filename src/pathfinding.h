@@ -23,12 +23,15 @@ enum class PathfindingFlag : uint8_t {
     Swimmable,      // Can swim in
     Air,            // Empty air
     Unsheltered,    // Outside and above ground level
-    Obstacle,       // Something stopping us, might be bashable.
+    Obstacle,       // Something stopping us, might be bashable, climbable, diggable, or openable
     Bashable,       // Something bashable.
     Impassable,     // Impassable obstacle.
     Vehicle,        // Vehicle tile (passable or not)
     DangerousField, // Dangerous field
     DangerousTrap,  // Dangerous trap (i.e. not flagged benign)
+
+    // TODO: Rename these to StairsUp and StairsDown.
+    // TODO: Handle ladders, elevators, etc.
     GoesUp,         // Valid stairs up
     GoesDown,       // Valid stairs down
     RampUp,         // Valid ramp up
@@ -127,6 +130,8 @@ constexpr PathfindingFlags operator |( const PathfindingFlag &a, const Pathfindi
     return PathfindingFlags( a ) | PathfindingFlags( b );
 }
 
+// Cache of PathfindingFlags for each point in the reality bubble
+// for a given z-level.
 struct pathfinding_cache {
     pathfinding_cache();
 
@@ -134,6 +139,14 @@ struct pathfinding_cache {
     std::unordered_set<point_bub_ms> dirty_points;
 
     cata::mdarray<PathfindingFlags, point_bub_ms> special;
+};
+
+class PathfindingSettings
+{
+public:
+    // Terrain that should be avoided by default on simple pathfinding
+    static constexpr PathfindingFlags RoughTerrain = PathfindingFlag::Slow | PathfindingFlag::Obstacle |
+        PathfindingFlag::Vehicle | PathfindingFlag::Sharp | PathfindingFlag::DangerousTrap;
 };
 
 struct pathfinding_settings {

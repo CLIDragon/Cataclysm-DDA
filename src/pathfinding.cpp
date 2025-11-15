@@ -41,11 +41,11 @@ static constexpr int flat_index( const point_bub_ms &p )
 // Flattened 2D array representing a single z-level worth of pathfinding data
 struct path_data_layer {
     // Closed/open is accessed way more often than all other values here
-    std::bitset< MAPSIZE_X *MAPSIZE_Y > closed;
-    std::bitset< MAPSIZE_X *MAPSIZE_Y > open;
-    std::array< int, MAPSIZE_X *MAPSIZE_Y > score;
-    std::array< int, MAPSIZE_X *MAPSIZE_Y > gscore;
-    std::array< tripoint_bub_ms, MAPSIZE_X *MAPSIZE_Y > parent;
+    std::bitset< MAPSIZE_X * MAPSIZE_Y > closed;
+    std::bitset< MAPSIZE_X * MAPSIZE_Y > open;
+    std::array< int, MAPSIZE_X * MAPSIZE_Y > score;
+    std::array< int, MAPSIZE_X * MAPSIZE_Y > gscore;
+    std::array< tripoint_bub_ms, MAPSIZE_X * MAPSIZE_Y > parent;
 
     void reset() {
         closed.reset();
@@ -53,13 +53,16 @@ struct path_data_layer {
     }
 };
 
+// Cache for A* pathfinding queue.
 struct pathfinder {
     using queue_type =
         std::priority_queue< std::pair<int, tripoint_bub_ms>, std::vector< std::pair<int, tripoint_bub_ms> >, pair_greater_cmp_first >;
+    // The points that can be accessed, ordered by cost. 
     queue_type open;
     std::array< std::unique_ptr< path_data_layer >, OVERMAP_LAYERS > path_data;
 
     path_data_layer &get_layer( const int z ) {
+        assert( -OVERMAP_DEPTH <= z && z <= OVERMAP_HEIGHT );
         std::unique_ptr< path_data_layer > &ptr = path_data[z + OVERMAP_DEPTH];
         if( ptr != nullptr ) {
             return *ptr;
@@ -68,6 +71,7 @@ struct pathfinder {
         return *ptr;
     }
 
+    // Reset the closed and open bitsets for the layers between minz and maxz, inclusive. 
     void reset( int minz, int maxz ) {
         for( int i = minz; i <= maxz; ++i ) {
             std::unique_ptr< path_data_layer > &ptr = path_data[i + OVERMAP_DEPTH];
@@ -82,12 +86,15 @@ struct pathfinder {
         return open.empty();
     }
 
+    // Get the next cheapest available point.
     tripoint_bub_ms get_next() {
         const auto pt = open.top();
         open.pop();
         return pt.second;
     }
 
+    // Add a point as a potential path. If the destination is inaccessible, or the 
+    // value is less, ignore it.
     void add_point( const int gscore, const int score, const tripoint_bub_ms &from,
                     const tripoint_bub_ms &to ) {
         path_data_layer &layer = get_layer( to.z() );
@@ -106,12 +113,14 @@ struct pathfinder {
         open.emplace( score, to );
     }
 
+    // Mark a point as globally impassible.
     void close_point( const tripoint_bub_ms &p ) {
         path_data_layer &layer = get_layer( p.z() );
         const int index = flat_index( p.xy() );
         layer.closed[index] = true;
     }
 
+    // Mark a point as potentially passible.
     void unclose_point( const tripoint_bub_ms &p ) {
         path_data_layer &layer = get_layer( p.z() );
         const int index = flat_index( p.xy() );
@@ -121,55 +130,29 @@ struct pathfinder {
 
 static pathfinder pf;
 
-// Modifies `t` to point to a tile with `flag` in a 1-submap radius of `t`'s original value,
-// searching nearest points first (starting with `t` itself).
-// return false if it could not find a suitable point
-static bool vertical_move_destination( const map &m, ter_furn_flag flag, tripoint_bub_ms &t )
+// Find the point closest to t (starting with t) that has the corresponding flags within the reality bubble at a distance
+// of at most SEEX.
+// Since maps are always the same size (MAPSIZE_X x MAPSIZE_Y), the returned point is inbounds.
+static std::optional<tripoint_bub_ms_ib> find_closest_point_with_flag(const map& here, const PathfindingFlags flags, const tripoint_bub_ms& t)
 {
-    const pathfinding_cache &pf_cache = m.get_pathfinding_cache_ref( t.z() );
-    for( const point_bub_ms &p : closest_points_first( t.xy(), SEEX ) ) {
-        if( pf_cache.special[p.x()][p.y()] & ( PathfindingFlag::GoesDown | PathfindingFlag::GoesUp ) ) {
-            const tripoint_bub_ms t2( p, t.z() );
-            if( m.has_flag( flag, t2 ) ) {
-                t = t2;
-                return true;
-            }
+    const pathfinding_cache& pf_cache = here.get_pathfinding_cache_ref(t.z());
+    std::optional<point_bub_ms> p = find_point_closest_first(t.xy(), SEEX, [&pf_cache, &flags](const point& p) {
+        if (p.x >= 0 && p.x < MAPSIZE_X && p.y >= 0 && p.y < MAPSIZE_Y) {
+            return (bool) (pf_cache.special[p.x][p.y] & flags);
         }
+
+        return false;
+        });
+    if (p) {
+        return tripoint_bub_ms_ib { *p, t.z()};
     }
-    return false;
+    return std::nullopt;
 }
 
-template<class Set1, class Set2>
-static bool is_disjoint( const Set1 &set1, const Set2 &set2 )
-{
-    if( set1.empty() || set2.empty() ) {
-        return true;
-    }
-
-    typename Set1::const_iterator it1 = set1.begin();
-    typename Set1::const_iterator it1_end = set1.end();
-
-    typename Set2::const_iterator it2 = set2.begin();
-    typename Set2::const_iterator it2_end = set2.end();
-
-    if( *set2.rbegin() < *it1 || *set1.rbegin() < *it2 ) {
-        return true;
-    }
-
-    while( it1 != it1_end && it2 != it2_end ) {
-        if( *it1 == *it2 ) {
-            return false;
-        }
-        if( *it1 < *it2 ) {
-            it1++;
-        } else {
-            it2++;
-        }
-    }
-
-    return true;
-}
-
+// Returns the straight route between f and the closest point to t, on the map, if it exists.
+// Return an empty vector if it doesn't.
+// TODO: Accept a PathfindingSettings to make the avoidance configurable.
+// TODO: Check that the transitions between points are configurable.
 std::vector<tripoint_bub_ms> map::straight_route( const tripoint_bub_ms &f,
         const tripoint_bub_ms &t ) const
 {
@@ -177,11 +160,13 @@ std::vector<tripoint_bub_ms> map::straight_route( const tripoint_bub_ms &f,
     if( f == t || !inbounds( f ) ) {
         return ret;
     }
+
     if( !inbounds( t ) ) {
         tripoint_bub_ms clipped = t;
         clip_to_bounds( clipped );
         return straight_route( f, clipped );
     }
+    
     if( f.z() == t.z() ) {
         ret = line_to( f, t );
         const pathfinding_cache &pf_cache = get_pathfinding_cache_ref( f.z() );
@@ -567,8 +552,10 @@ std::vector<tripoint_bub_ms> map::route( const tripoint_bub_ms &f,
             if( !opt_dest ) {
                 continue;
             }
-            tripoint_bub_ms dest( opt_dest.value() );
-            if( vertical_move_destination( *this, ter_furn_flag::TFLAG_GOES_UP, dest ) ) {
+
+            opt_dest = find_closest_point_with_flag(*this, PathfindingFlag::GoesUp, opt_dest.value());
+            if( opt_dest ) {
+                tripoint_bub_ms dest = opt_dest.value();
                 if( !inbounds( dest ) ) {
                     continue;
                 }
@@ -585,8 +572,10 @@ std::vector<tripoint_bub_ms> map::route( const tripoint_bub_ms &f,
             if( !opt_dest ) {
                 continue;
             }
-            tripoint_bub_ms dest( opt_dest.value() );
-            if( vertical_move_destination( *this, ter_furn_flag::TFLAG_GOES_DOWN, dest ) ) {
+
+            opt_dest = find_closest_point_with_flag(*this, PathfindingFlag::GoesUp, opt_dest.value());
+            if (opt_dest) {
+                tripoint_bub_ms dest = opt_dest.value();
                 if( !inbounds( dest ) ) {
                     continue;
                 }
