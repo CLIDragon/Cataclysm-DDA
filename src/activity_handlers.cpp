@@ -1602,7 +1602,7 @@ void activity_handlers::fill_liquid_do_turn( player_activity *act, Character *yo
     player_activity &act_ref = *act;
     try {
         // 1. Gather the source item.
-        vehicle *source_veh = nullptr;
+        std::optional<vehicle> source_veh;
         const tripoint_bub_ms source_pos = tripoint_bub_ms( act_ref.coords.at( 0 ) );
         map &here = get_map();
         map_stack source_stack = here.i_at( source_pos );
@@ -1614,8 +1614,8 @@ void activity_handlers::fill_liquid_do_turn( player_activity *act, Character *yo
         int veh_charges = 0;
         switch( source_type ) {
             case liquid_source_type::VEHICLE:
-                source_veh = veh_pointer_or_null( here.veh_at( source_pos ) );
-                if( source_veh == nullptr ) {
+                source_veh = here.veh_at( source_pos )->vehicle();
+                if( source_veh == std::nullopt ) {
                     throw std::runtime_error( "could not find source vehicle for liquid transfer" );
                 }
                 deserialize_from_string( liquid, act_ref.str_values.at( 0 ) );
